@@ -5,11 +5,15 @@ services:
     container_name: trustsocial
     restart: unless-stopped
     env_file: .env
-    ports:
-      # Left as 127.0.0.1-only by default (see README's "Deploying" section) -
-      # not exposed to the whole internet until a real HTTPS domain is in front
-      # of it. Change to "4400:4400" once that's in place.
-      - "127.0.0.1:4400:4400"
+    # No published host port. A reverse proxy that already sits on the same
+    # docker network (see the `networks:` block below) reaches this container
+    # directly by its service/container name on port 4400 - nothing needs to
+    # be exposed on the host at all. If you're running Postbox standalone with
+    # no such proxy available, add back `ports: ["127.0.0.1:4400:4400"]` and
+    # put your own TLS-terminating proxy in front of that instead.
+    networks:
+      - default
+      - proxy
     volumes:
       - trustsocial-data:/data
       # Read-only: the importer only ever reads marketing/social/queue/*.md and
@@ -19,3 +23,13 @@ services:
 
 volumes:
   trustsocial-data:
+
+networks:
+  default:
+  # External network the reverse proxy container is already on (e.g. the
+  # docker-compose project that runs Caddy). Must already exist - it's not
+  # created or torn down by this compose file. Set PROXY_NETWORK_NAME in your
+  # shell/`.env` if it's not literally named "trustlotto_default".
+  proxy:
+    name: ${PROXY_NETWORK_NAME:-trustlotto_default}
+    external: true

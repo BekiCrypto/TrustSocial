@@ -112,19 +112,35 @@ cp .env.example .env   # fill in TOKEN_ENCRYPTION_KEY, DASHBOARD_PASSWORD, PUBLI
 docker compose up -d --build
 ```
 
-By default `docker-compose.yml` only binds the dashboard to `127.0.0.1:4400` on the host — **not**
-exposed to the internet yet. Two reasons: the login page posts a password over plain HTTP, and
-this thing will hold real OAuth tokens once accounts are connected — neither should sit on the
-open internet without TLS in front of it. Google, Meta, and TikTok also generally require an
-`https://` redirect URI for anything other than `localhost` anyway, so a bare `http://ip:4400`
-won't get you a working "Connect account" flow regardless.
+`docker-compose.yml` does **not** publish any port on the host by default — the login page posts a
+password over plain HTTP, and this thing holds real OAuth tokens once accounts are connected,
+neither of which should sit on the open internet without TLS in front of it. Google, Meta, and
+TikTok also generally require an `https://` redirect URI for anything other than `localhost`
+anyway, so a bare `http://ip:4400` wouldn't get you a working "Connect account" flow regardless.
 
-**To actually go live:** put a real domain in front of it with TLS — the simplest path if the
-domain is already on Cloudflare (as trustlotto.app is) is a proxied subdomain (e.g.
-`social.trustlotto.app`) pointed at this host; Cloudflare terminates HTTPS at the edge and proxies
-plain HTTP to the container, so nothing extra is needed on the box itself. Then set `PUBLIC_URL`
-to that `https://` URL, change the compose port mapping to `"4400:4400"` (or route through a
-reverse proxy already on the box), and re-run `docker compose up -d`.
+**To actually go live:** put a real domain in front of it with TLS. If you already run another
+docker-compose stack on the same host with its own reverse proxy (Caddy, nginx, Traefik...), the
+easiest path is to join that proxy's docker network — that's what TrustLotto's own deploy does:
+Postbox's compose file declares an `external` network named by `PROXY_NETWORK_NAME` (defaults to
+`trustlotto_default`, TrustLotto's own Caddy stack's network), and the proxy reaches this
+container by its service name (`postbox`) on port 4400, entirely inside docker — no host port,
+no extra hop. A Caddy site block for that pattern looks like:
+
+```
+social.trustlotto.app {
+	reverse_proxy postbox:4400
+	encode gzip zstd
+}
+```
+
+If Cloudflare fronts the domain (as trustlotto.app does), Cloudflare terminates HTTPS at the edge
+and proxies plain HTTP to the box, so nothing extra is needed for certificates on the box itself.
+Whichever path you take, set `PUBLIC_URL` to the real `https://` URL and re-run
+`docker compose up -d --build`.
+
+Running Postbox fully standalone, with no existing reverse proxy to join? Delete the `networks:`
+block from `docker-compose.yml`, add back `ports: ["127.0.0.1:4400:4400"]`, and put your own
+TLS-terminating proxy in front of that instead.
 
 ## Security notes
 
