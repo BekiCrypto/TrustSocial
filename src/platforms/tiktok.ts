@@ -134,7 +134,7 @@ export const tiktokAdapter: PlatformAdapter = {
     if (!/^https?:\/\//.test(video.path)) {
       throw new Error(
         "TikTok fetches media by public URL from a domain verified in the app's settings - this " +
-          "post's media is a local path. Serve it first (Postbox's /media/:id route) or host it."
+          "post's media is a local path. Serve it first (TrustSocial's /media/:id route) or host it."
       );
     }
 

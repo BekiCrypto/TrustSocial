@@ -1,10 +1,10 @@
-# Postbox
+# TrustSocial
 
 A tiny, self-hosted post scheduler for a single brand's social accounts. Built because the
 established open-source options didn't fit a one-brand, few-accounts use case: **Postiz** now
 requires a full Elasticsearch + Temporal workflow-engine stack (built for serving many customers
 at once), and **Mixpost**'s free tier doesn't support TikTok, Instagram, or YouTube (that needs
-its paid tier). Postbox is the missing middle: one small Node process, one SQLite file, nothing
+its paid tier). TrustSocial is the missing middle: one small Node process, one SQLite file, nothing
 else running.
 
 **Status: early, unaudited by real traffic yet.** The three platform integrations are written
@@ -32,7 +32,7 @@ text in yourself), or store anything it doesn't need to.
 
 ## One-time setup, per platform
 
-You do this once, in each platform's own developer console — Postbox never sees a password, only
+You do this once, in each platform's own developer console — TrustSocial never sees a password, only
 the OAuth tokens each platform hands back after you approve the connection in your browser.
 
 ### YouTube
@@ -72,13 +72,13 @@ npm run dev        # http://localhost:4400, auto-reloads on change
 
 Then:
 1. Open the dashboard, log in with `DASHBOARD_PASSWORD`.
-2. **Accounts** → Connect each platform you've configured (this is where you do the real login + 2FA, in that platform's own popup — Postbox never touches your password).
+2. **Accounts** → Connect each platform you've configured (this is where you do the real login + 2FA, in that platform's own popup — TrustSocial never touches your password).
 3. **Queue** → Import from TrustLotto queue → review each drafted post → Approve or Reject → edit the caption/time first if you want.
 4. Leave it running. The scheduler checks every minute and publishes anything approved whose time has come.
 
 ## The queue format
 
-Postbox is generic; the one TrustLotto-specific piece is `src/importers/trustlotto.ts`, which
+TrustSocial is generic; the one TrustLotto-specific piece is `src/importers/trustlotto.ts`, which
 reads `### POST` blocks out of `marketing/social/queue/*.md` in the TrustLotto repo:
 
 ```
@@ -95,7 +95,7 @@ emoji, hashtags - whatever the post needs.
 
 `platform` must be `youtube`, `instagram`, or `tiktok` (text-only platforms are skipped, not
 errored — mix them freely in the same file). `media` is a path relative to the TrustLotto repo
-root; Postbox serves it at `{PUBLIC_URL}/media/<filename>` so Instagram/TikTok's URL-fetch
+root; TrustSocial serves it at `{PUBLIC_URL}/media/<filename>` so Instagram/TikTok's URL-fetch
 requirement is satisfied automatically. Re-running the import is safe — each block is
 fingerprinted so it's only ever created once.
 
@@ -121,14 +121,14 @@ anyway, so a bare `http://ip:4400` wouldn't get you a working "Connect account" 
 **To actually go live:** put a real domain in front of it with TLS. If you already run another
 docker-compose stack on the same host with its own reverse proxy (Caddy, nginx, Traefik...), the
 easiest path is to join that proxy's docker network — that's what TrustLotto's own deploy does:
-Postbox's compose file declares an `external` network named by `PROXY_NETWORK_NAME` (defaults to
-`trustlotto_default`, TrustLotto's own Caddy stack's network), and the proxy reaches this
-container by its service name (`postbox`) on port 4400, entirely inside docker — no host port,
-no extra hop. A Caddy site block for that pattern looks like:
+TrustSocial's compose file declares an `external` network named by `PROXY_NETWORK_NAME` (defaults
+to `trustlotto_default`, TrustLotto's own Caddy stack's network), and the proxy reaches this
+container by its container name (`trustsocial`) on port 4400, entirely inside docker — no host
+port, no extra hop. A Caddy site block for that pattern looks like:
 
 ```
 social.trustlotto.app {
-	reverse_proxy postbox:4400
+	reverse_proxy trustsocial:4400
 	encode gzip zstd
 }
 ```
@@ -138,7 +138,7 @@ and proxies plain HTTP to the box, so nothing extra is needed for certificates o
 Whichever path you take, set `PUBLIC_URL` to the real `https://` URL and re-run
 `docker compose up -d --build`.
 
-Running Postbox fully standalone, with no existing reverse proxy to join? Delete the `networks:`
+Running TrustSocial fully standalone, with no existing reverse proxy to join? Delete the `networks:`
 block from `docker-compose.yml`, add back `ports: ["127.0.0.1:4400:4400"]`, and put your own
 TLS-terminating proxy in front of that instead.
 
@@ -149,7 +149,7 @@ TLS-terminating proxy in front of that instead.
   and auditable instead of building key-rotation machinery for a single-operator tool).
 - The dashboard is a single shared password, not real user accounts — appropriate for "one
   brand, one or two operators," not for a multi-user product.
-- Never commit `.env` or `postbox.db` — both are gitignored.
+- Never commit `.env` or `trustsocial.db` — both are gitignored.
 - `TIKTOK_AUDITED` exists specifically so a misconfigured `.env` can't accidentally make a real
   public post before TikTok has actually reviewed the app.
 

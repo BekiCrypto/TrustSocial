@@ -9,7 +9,7 @@ export type PostStatus =
   | "rejected"; // a human declined it; left in the DB for the record, never published
 
 export interface MediaRef {
-  /** Local file path OR an already-public URL. If local, Postbox serves it at /media/:id. */
+  /** Local file path OR an already-public URL. If local, TrustSocial serves it at /media/:id. */
   path: string;
   kind: "video" | "image";
 }

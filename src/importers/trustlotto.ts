@@ -7,7 +7,7 @@ import type { MediaRef, Platform } from "../types.js";
 /**
  * Imports the weekly post queue TrustLotto's marketing "Loop B" writes to
  * marketing/social/queue/*.md in its own repo. This is the ONE piece of
- * Postbox that's TrustLotto-specific - everything else (db, adapters, web UI,
+ * TrustSocial that's TrustLotto-specific - everything else (db, adapters, web UI,
  * scheduler) is generic. A different project would swap this file for its own
  * importer and reuse the rest as-is.
  *
@@ -24,7 +24,7 @@ import type { MediaRef, Platform } from "../types.js";
  *   multiple lines, emoji and hashtags are fine
  *   ---
  *
- * Text-only channels (X, Telegram, Discord) aren't in scope for Postbox v0.1 -
+ * Text-only channels (X, Telegram, Discord) aren't in scope for TrustSocial v0.1 -
  * it's video-first, matching the three platforms it can actually publish to.
  * Blocks for other platforms are skipped, not errored, so one file can mix
  * platforms freely.

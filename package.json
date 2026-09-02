@@ -1,5 +1,5 @@
 {
-  "name": "postbox",
+  "name": "trustsocial",
   "version": "0.1.0",
   "private": false,
   "description": "A tiny, self-hosted post scheduler for a single brand's social accounts (TikTok, Instagram, YouTube today). No search engine, no workflow orchestrator, no multi-tenant machinery - just a queue, a review step, and a publish loop.",

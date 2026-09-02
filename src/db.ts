@@ -6,7 +6,7 @@ import type { Account, MediaRef, Platform, Post, PostStatus } from "./types.js";
 // deliberately not `better-sqlite3`: that needs native compilation (node-gyp +
 // Python), which is exactly the kind of extra machinery this whole project
 // exists to avoid. Zero dependencies for the database layer.
-const DB_PATH = process.env.POSTBOX_DB_PATH || "postbox.db";
+const DB_PATH = process.env.TRUSTSOCIAL_DB_PATH || "trustsocial.db";
 export const db = new DatabaseSync(DB_PATH);
 db.exec("PRAGMA journal_mode = WAL");
 

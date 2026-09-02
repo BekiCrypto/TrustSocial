@@ -24,7 +24,7 @@ app.use(
 
 const port = Number(process.env.PORT ?? 4400);
 app.listen(port, () => {
-  console.log(`Postbox listening on :${port}`);
+  console.log(`TrustSocial listening on :${port}`);
   console.log(`Public URL configured as: ${process.env.PUBLIC_URL ?? "(not set - OAuth callbacks will fail)"}`);
   console.log(`TrustLotto repo root: ${trustlottoRepoRoot}`);
 });

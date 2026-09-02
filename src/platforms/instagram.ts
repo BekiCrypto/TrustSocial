@@ -128,7 +128,7 @@ export const instagramAdapter: PlatformAdapter = {
     if (!/^https?:\/\//.test(video.path)) {
       throw new Error(
         "Instagram fetches media by public URL - this post's media is a local path. " +
-          "Serve it first (Postbox's /media/:id route) or host it and use that URL."
+          "Serve it first (TrustSocial's /media/:id route) or host it and use that URL."
       );
     }
     const igUserId = creds.extra?.igUserId;

@@ -1,5 +1,5 @@
 services:
-  postbox:
+  trustsocial:
     build: .
     image: trustsocial:latest
     container_name: trustsocial
@@ -7,10 +7,10 @@ services:
     env_file: .env
     # No published host port. A reverse proxy that already sits on the same
     # docker network (see the `networks:` block below) reaches this container
-    # directly by its service/container name on port 4400 - nothing needs to
-    # be exposed on the host at all. If you're running Postbox standalone with
-    # no such proxy available, add back `ports: ["127.0.0.1:4400:4400"]` and
-    # put your own TLS-terminating proxy in front of that instead.
+    # directly by its container name on port 4400 - nothing needs to
+    # be exposed on the host at all. If you're running TrustSocial standalone
+    # with no such proxy available, add back `ports: ["127.0.0.1:4400:4400"]`
+    # and put your own TLS-terminating proxy in front of that instead.
     networks:
       - default
       - proxy

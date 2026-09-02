@@ -22,14 +22,14 @@ function readCookie(req: Request, name: string): string | undefined {
 }
 
 function requireAuth(req: Request, res: Response, next: NextFunction) {
-  const token = readCookie(req, "postbox_session");
+  const token = readCookie(req, "trustsocial_session");
   if (token && validSessions.has(token)) return next();
   res.redirect("/login");
 }
 
 function page(title: string, body: string): string {
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>${title} · Postbox</title>
+  <title>${title} · TrustSocial</title>
   <style>
     body{font-family:system-ui,-apple-system,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1a1a1a;background:#fbfaf8}
     h1{font-size:1.4rem} h2{font-size:1.1rem;margin-top:2rem;border-bottom:1px solid #ddd;padding-bottom:.3rem}
@@ -98,7 +98,7 @@ export function buildDashboard(opts: { trustlottoRepoRoot: string; mediaRoots: s
 
   // ---------------------------------------------------------------- auth
   router.get("/login", (_req, res) => {
-    res.send(page("Log in", `<h1>Postbox</h1><form method="post" action="/login" class="card">
+    res.send(page("Log in", `<h1>TrustSocial</h1><form method="post" action="/login" class="card">
       <input type="password" name="password" placeholder="Dashboard password" autofocus>
       <button type="submit">Log in</button></form>`));
   });
@@ -109,7 +109,7 @@ export function buildDashboard(opts: { trustlottoRepoRoot: string; mediaRoots: s
     if (!ok) return res.status(401).send(page("Log in", `<p>Wrong password.</p><a href="/login">Try again</a>`));
     const token = randomUUID();
     validSessions.add(token);
-    res.setHeader("Set-Cookie", `postbox_session=${token}; HttpOnly; SameSite=Lax; Path=/`);
+    res.setHeader("Set-Cookie", `trustsocial_session=${token}; HttpOnly; SameSite=Lax; Path=/`);
     res.redirect("/");
   });
 
@@ -129,7 +129,7 @@ export function buildDashboard(opts: { trustlottoRepoRoot: string; mediaRoots: s
     }).join("\n");
 
     res.send(page("Queue", `
-      <h1>Postbox</h1>
+      <h1>TrustSocial</h1>
       <form method="post" action="/import"><button type="submit">Import from TrustLotto queue</button></form>
       ${sections || '<p class="muted">Nothing in the queue yet. Connect accounts, then import.</p>'}
     `));
