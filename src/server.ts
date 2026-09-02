@@ -1,11 +1,17 @@
 import "dotenv/config";
 import express from "express";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { buildDashboard } from "./web/dashboard.js";
 import { startScheduler } from "./scheduler.js";
 import "./db.js"; // side-effect: opens the db and runs the schema
 
 const app = express();
+
+// `public/` sits next to `src/` (dev, via tsx) and next to `dist/` (prod build) alike -
+// one level up from this file's own directory, either way.
+const publicDir = resolve(dirname(fileURLToPath(import.meta.url)), "..", "public");
+app.use(express.static(publicDir));
 
 // Where the TrustLotto repo checkout lives, so the importer can find
 // marketing/social/queue/ and resolve `media:` paths. Override with

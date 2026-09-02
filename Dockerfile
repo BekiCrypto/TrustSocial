@@ -12,6 +12,7 @@ ENV NODE_ENV=production
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && addgroup -S trustsocial && adduser -S trustsocial -G trustsocial
 COPY --from=builder /app/dist ./dist
+COPY public ./public
 # Where the SQLite file and any locally-served media live - mounted as a volume
 # in docker-compose.yml so it survives container recreation.
 RUN mkdir -p /data && chown -R trustsocial:trustsocial /data /app
