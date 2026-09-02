@@ -12,6 +12,10 @@ services:
       - "127.0.0.1:4400:4400"
     volumes:
       - trustsocial-data:/data
+      # Read-only: the importer only ever reads marketing/social/queue/*.md and
+      # resolves `media:` paths from here. Never written to from this container.
+      # Point TRUSTLOTTO_REPO_ROOT (.env) at wherever this is mounted from.
+      - ${TRUSTLOTTO_REPO_HOST_PATH:-/opt/trustlotto}:/trustlotto-repo:ro
 
 volumes:
   trustsocial-data:
