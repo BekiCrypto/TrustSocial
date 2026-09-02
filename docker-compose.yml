@@ -1,0 +1,17 @@
+services:
+  postbox:
+    build: .
+    image: trustsocial:latest
+    container_name: trustsocial
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      # Left as 127.0.0.1-only by default (see README's "Deploying" section) -
+      # not exposed to the whole internet until a real HTTPS domain is in front
+      # of it. Change to "4400:4400" once that's in place.
+      - "127.0.0.1:4400:4400"
+    volumes:
+      - trustsocial-data:/data
+
+volumes:
+  trustsocial-data:

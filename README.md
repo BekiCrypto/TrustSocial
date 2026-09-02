@@ -103,6 +103,29 @@ Point a different importer at a different source (a JSON file, another repo, a f
 a new file matching the same shape as `trustlotto.ts` and wiring it into the dashboard's
 `/import` route — everything downstream (approval, scheduling, publishing) is unchanged.
 
+## Deploying
+
+```bash
+git clone https://github.com/BekiCrypto/TrustSocial.git
+cd TrustSocial
+cp .env.example .env   # fill in TOKEN_ENCRYPTION_KEY, DASHBOARD_PASSWORD, PUBLIC_URL, platform creds
+docker compose up -d --build
+```
+
+By default `docker-compose.yml` only binds the dashboard to `127.0.0.1:4400` on the host — **not**
+exposed to the internet yet. Two reasons: the login page posts a password over plain HTTP, and
+this thing will hold real OAuth tokens once accounts are connected — neither should sit on the
+open internet without TLS in front of it. Google, Meta, and TikTok also generally require an
+`https://` redirect URI for anything other than `localhost` anyway, so a bare `http://ip:4400`
+won't get you a working "Connect account" flow regardless.
+
+**To actually go live:** put a real domain in front of it with TLS — the simplest path if the
+domain is already on Cloudflare (as trustlotto.app is) is a proxied subdomain (e.g.
+`social.trustlotto.app`) pointed at this host; Cloudflare terminates HTTPS at the edge and proxies
+plain HTTP to the container, so nothing extra is needed on the box itself. Then set `PUBLIC_URL`
+to that `https://` URL, change the compose port mapping to `"4400:4400"` (or route through a
+reverse proxy already on the box), and re-run `docker compose up -d`.
+
 ## Security notes
 
 - Platform tokens are encrypted at rest (AES-256-GCM, `TOKEN_ENCRYPTION_KEY`). Losing that key
