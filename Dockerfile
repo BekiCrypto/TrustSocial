@@ -19,4 +19,7 @@ RUN mkdir -p /data && chown -R trustsocial:trustsocial /data /app
 USER trustsocial
 ENV TRUSTSOCIAL_DB_PATH=/data/trustsocial.db
 EXPOSE 4400
+# Uses Node's built-in fetch instead of curl/wget so the image doesn't need either installed.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "fetch('http://localhost:4400/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "dist/server.js"]

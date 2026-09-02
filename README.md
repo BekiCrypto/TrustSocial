@@ -1,15 +1,31 @@
 # TrustSocial
 
+![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+![Node >=20](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)
+![Docker ready](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)
+![Dependencies](https://img.shields.io/badge/runtime%20deps-3-brightgreen)
+
 A tiny, self-hosted post scheduler for a single brand's social accounts. Built because the
 established open-source options didn't fit a one-brand, few-accounts use case: **Postiz** now
 requires a full Elasticsearch + Temporal workflow-engine stack (built for serving many customers
 at once), and **Mixpost**'s free tier doesn't support TikTok, Instagram, or YouTube (that needs
 its paid tier). TrustSocial is the missing middle: one small Node process, one SQLite file, nothing
-else running.
+else running. See [How it compares](#how-it-compares) for the full breakdown.
 
-**Status: early, unaudited by real traffic yet.** The three platform integrations are written
-against each platform's current documented API, but haven't been exercised against live
-developer-app credentials. Test each one for real before trusting it unattended.
+![Queue view - setup checklist, publishing stats, and streak heatmap](docs/screenshots/queue.png)
+
+**Status: functional and hardened, not yet exercised against live traffic.** The three platform
+integrations are written against each platform's current documented API and the app itself has a
+real security pass (rate limiting, CSRF, security headers, container hardening - see
+[Security & hardening](#security--hardening)), but nobody has run it against live developer-app
+credentials for an extended period yet. Test each platform integration for real before trusting it
+fully unattended.
+
+## Screenshots
+
+| Landing page | Accounts |
+|---|---|
+| ![Landing page](docs/screenshots/landing.png) | ![Accounts page](docs/screenshots/accounts.png) |
 
 ## What it does
 
@@ -21,6 +37,26 @@ developer-app credentials. Test each one for real before trusting it unattended.
 It does **not**: manage multiple brands/tenants, do analytics, handle text-only platforms (X,
 Telegram, Discord aren't in scope — those don't need a video-publish API, just paste the drafted
 text in yourself), or store anything it doesn't need to.
+
+The dashboard also tracks a small "get set up" checklist for a fresh install (connect an account →
+import → approve → publish, four steps, hidden once you've graduated past them) and, once you're
+publishing, a stats panel: total published, success rate, a day-streak counter, and a 12-week
+activity heatmap — real numbers computed from your own post history, not a vanity metric bolted on
+for the sake of it.
+
+## How it compares
+
+Not a knock on the alternatives — they're built for different jobs. This is what's actually
+different if you're one brand, not an agency:
+
+| | **TrustSocial** | Postiz | Mixpost (free) | Buffer / Later |
+|---|---|---|---|---|
+| Self-hosted | **Yes** | Yes | Yes | No |
+| Open source | **Yes · MIT** | Yes | Core only | No |
+| TikTok + Instagram + YouTube | **Yes** | Yes | Paid tier only | Yes |
+| Runs without Elasticsearch or a workflow engine | **Yes** | No | Yes | n/a — hosted |
+| Review queue before publish | **Yes** | Yes | Yes | Yes |
+| Cost | **Free** | Free | Limited free tier | Paid subscription |
 
 ## Platforms supported
 
@@ -142,16 +178,46 @@ Running TrustSocial fully standalone, with no existing reverse proxy to join? De
 block from `docker-compose.yml`, add back `ports: ["127.0.0.1:4400:4400"]`, and put your own
 TLS-terminating proxy in front of that instead.
 
-## Security notes
+## Security & hardening
 
-- Platform tokens are encrypted at rest (AES-256-GCM, `TOKEN_ENCRYPTION_KEY`). Losing that key
-  means reconnecting every account — there's no recovery path, by design (keeps the code simple
-  and auditable instead of building key-rotation machinery for a single-operator tool).
+Everything below is hand-rolled in `src/security.ts` and applied globally in `src/server.ts` —
+no `helmet`, no `express-rate-limit`, no `csurf`. Each one is a small, well-understood primitive;
+pulling in a dependency for each would work against the one thing this project sells itself on
+(see the badges above — three runtime dependencies, total).
+
+**Application layer:**
+- Platform tokens encrypted at rest (AES-256-GCM, `TOKEN_ENCRYPTION_KEY`). Losing that key means
+  reconnecting every account — there's no recovery path, by design (keeps the code simple and
+  auditable instead of building key-rotation machinery for a single-operator tool).
+- Session cookie is `HttpOnly`, `SameSite=Lax`, and `Secure` whenever served over HTTPS.
+- Every authenticated state-changing request (approve/reject/edit/import/logout) requires a
+  session-bound CSRF token — a cross-site form can't forge one without first reading an
+  authenticated page.
+- Login is rate-limited (8 attempts / 15 min per IP, `429` + `Retry-After` past that) and the
+  password comparison is timing-safe (`crypto.timingSafeEqual`), not `===`.
+- Full security-header set on every response: `Content-Security-Policy` (no `unsafe-inline`
+  anywhere — every style lives in `public/styles.css`, zero inline `<script>`), `Strict-Transport-Security`,
+  `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`,
+  `Cross-Origin-Opener-Policy`, and a locked-down `Permissions-Policy`.
 - The dashboard is a single shared password, not real user accounts — appropriate for "one
-  brand, one or two operators," not for a multi-user product.
-- Never commit `.env` or `trustsocial.db` — both are gitignored.
+  brand, one or two operators," not a multi-user product.
 - `TIKTOK_AUDITED` exists specifically so a misconfigured `.env` can't accidentally make a real
   public post before TikTok has actually reviewed the app.
+- Fails fast on obvious misconfiguration at boot (missing/malformed `TOKEN_ENCRYPTION_KEY`, no
+  `DASHBOARD_PASSWORD`, `PUBLIC_URL` not `https://`) instead of running silently broken.
+- Never commit `.env` or `trustsocial.db` — both are gitignored.
+
+**Container layer** (`docker-compose.yml`): read-only root filesystem (only the named data volume
+and a `/tmp` tmpfs are writable), all Linux capabilities dropped, `no-new-privileges`, a memory
+ceiling, and a `HEALTHCHECK` hitting `/healthz` (uses Node's built-in `fetch`, so the image needs
+neither `curl` nor `wget`). Runs as a non-root user (`trustsocial`) built into the image itself.
+
+**Known, tracked, not yet fixed:** `npm audit` currently flags two moderate advisories in
+transitive dependencies — a `qs`/`body-parser` DoS parsing edge case under Express 4, and a `uuid`
+buffer-bounds issue several layers under `googleapis`. Both fixes require a breaking major-version
+bump (Express 5, or a `googleapis` jump that hasn't been exercised against this app's YouTube
+adapter) — force-upgrading blind felt riskier than the advisories themselves for a tool that isn't
+yet handling real traffic. Worth revisiting before this goes into serious production use.
 
 ## License
 

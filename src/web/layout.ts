@@ -7,15 +7,28 @@ export function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 }
 
-export function shell(title: string, body: string, description?: string): string {
+const DEFAULT_DESCRIPTION =
+  "TrustSocial - a tiny, self-hosted post scheduler for one brand's TikTok, Instagram, and YouTube accounts.";
+
+export function shell(title: string, body: string, opts?: { description?: string; noindex?: boolean }): string {
+  const description = opts?.description ?? DEFAULT_DESCRIPTION;
+  const publicUrl = (process.env.PUBLIC_URL ?? "").replace(/\/$/, "");
+  const fullTitle = `${escapeHtml(title)} · TrustSocial`;
   return `<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escapeHtml(title)} · TrustSocial</title>
-<meta name="description" content="${escapeHtml(
-    description ?? "TrustSocial - a tiny, self-hosted post scheduler for one brand's TikTok, Instagram, and YouTube accounts."
-  )}">
+<title>${fullTitle}</title>
+<meta name="description" content="${escapeHtml(description)}">
+${opts?.noindex ? `<meta name="robots" content="noindex, nofollow">` : ""}
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="/styles.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="${fullTitle}">
+<meta property="og:description" content="${escapeHtml(description)}">
+${publicUrl ? `<meta property="og:url" content="${escapeHtml(publicUrl)}">\n<meta property="og:image" content="${escapeHtml(publicUrl)}/og-image.png">` : ""}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${fullTitle}">
+<meta name="twitter:description" content="${escapeHtml(description)}">
+${publicUrl ? `<meta name="twitter:image" content="${escapeHtml(publicUrl)}/og-image.png">` : ""}
 </head><body>${body}</body></html>`;
 }
 
@@ -57,3 +70,8 @@ export function platformLabel(platform: string): string {
 export function platformTag(platform: string): string {
   return `<span class="tag platform">${platformIcon(platform)}${platformLabel(platform)}</span>`;
 }
+
+export const ICON_CHECK_SM = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12.5l4.5 4.5L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+export const ICON_FLAME = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5c1 3-3 4.3-3 8a3 3 0 0 0 6 0c1.3 1 2 2.6 2 4.2a5 5 0 0 1-10 0c0-4.4 3.3-6 5-12.2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+export const ICON_STAR = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3.5l2.4 5.3 5.6.6-4.2 3.9 1.2 5.7L12 16l-5 3 1.2-5.7-4.2-3.9 5.6-.6L12 3.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+export const ICON_TROPHY = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 4h10v4a5 5 0 0 1-10 0V4z" stroke="currentColor" stroke-width="1.6"/><path d="M7 5H4v1a4 4 0 0 0 4 4M17 5h3v1a4 4 0 0 1-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 13v3m-3 3h6m-3 0v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`;

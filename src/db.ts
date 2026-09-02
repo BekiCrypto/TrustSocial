@@ -247,3 +247,65 @@ export function dueScheduledPosts(): Post[] {
     .all(nowIso()) as unknown as PostRow[];
   return rows.map(rowToPost);
 }
+
+// ---------------------------------------------------------------- stats (queue page's progress/streak panel)
+
+export interface PublishStats {
+  totalPosts: number;
+  totalPublished: number;
+  totalFailed: number;
+  /** Of posts that have actually been attempted (published + failed), what % succeeded. 100 when nothing's been attempted yet. */
+  successRate: number;
+  /** Consecutive days with >=1 published post, counting back from today. Today having zero (yet) doesn't break it. */
+  currentStreakDays: number;
+  /** Last 84 days (12 weeks), oldest first, UTC calendar days - for the activity heatmap. */
+  activity: { date: string; count: number }[];
+}
+
+/** Computed in JS from a full row scan, not SQL aggregation - deliberately simple for a
+ *  single-brand tool where "a lot of posts" is still a few thousand rows at most. */
+export function getPublishStats(): PublishStats {
+  const rows = db
+    .prepare("SELECT status, published_at FROM posts WHERE status IN ('published','failed')")
+    .all() as unknown as { status: PostStatus; published_at: string | null }[];
+
+  const totalPosts = (db.prepare("SELECT COUNT(*) AS n FROM posts").get() as unknown as { n: number }).n;
+  const totalPublished = rows.filter((r) => r.status === "published").length;
+  const totalFailed = rows.filter((r) => r.status === "failed").length;
+  const attempted = totalPublished + totalFailed;
+  const successRate = attempted ? Math.round((totalPublished / attempted) * 100) : 100;
+
+  const dayCounts = new Map<string, number>();
+  for (const r of rows) {
+    if (r.status !== "published" || !r.published_at) continue;
+    const day = r.published_at.slice(0, 10);
+    dayCounts.set(day, (dayCounts.get(day) ?? 0) + 1);
+  }
+
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const dayKey = (offset: number) => {
+    const d = new Date(today);
+    d.setUTCDate(d.getUTCDate() - offset);
+    return d.toISOString().slice(0, 10);
+  };
+
+  const activity: { date: string; count: number }[] = [];
+  for (let i = 83; i >= 0; i--) {
+    const key = dayKey(i);
+    activity.push({ date: key, count: dayCounts.get(key) ?? 0 });
+  }
+
+  let currentStreakDays = 0;
+  for (let i = 0; i < 365; i++) {
+    const count = dayCounts.get(dayKey(i)) ?? 0;
+    if (count > 0) {
+      currentStreakDays++;
+      continue;
+    }
+    if (i === 0) continue; // today's count still being zero doesn't end a streak already in progress
+    break;
+  }
+
+  return { totalPosts, totalPublished, totalFailed, successRate, currentStreakDays, activity };
+}

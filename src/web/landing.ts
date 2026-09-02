@@ -79,7 +79,7 @@ export function renderLanding(loggedIn: boolean): string {
         <div class="feature-card">
           <div class="feature-icon">${ICON_QUEUE}</div>
           <h3>Three platforms, one queue</h3>
-          <p>${["youtube", "instagram", "tiktok"].map((p) => `<span class="tag platform" style="margin-right:.3rem">${platformIcon(p)}${platformLabel(p)}</span>`).join("")}<br>
+          <p>${["youtube", "instagram", "tiktok"].map((p) => `<span class="tag platform mr-sm">${platformIcon(p)}${platformLabel(p)}</span>`).join("")}<br>
             from a single place - the scheduler checks every minute and publishes what's due.</p>
         </div>
         <div class="feature-card">
@@ -119,11 +119,31 @@ export function renderLanding(loggedIn: boolean): string {
       </ol>
     </div></section>
 
-    <section class="section"><div class="wrap" style="text-align:center">
-      <h2>Your server, your data</h2>
+    <section class="section"><div class="wrap">
+      <h2>How it compares</h2>
+      <p class="section-sub">Not a knock on the alternatives - they're built for different jobs. This is
+        what's actually different if you're one brand, not an agency.</p>
+      <div class="compare-wrap"><table class="compare">
+        <thead><tr><th></th><th class="this-product">TrustSocial</th><th>Postiz</th><th>Mixpost (free)</th><th>Buffer / Later</th></tr></thead>
+        <tbody>
+          <tr><td>Self-hosted</td><td class="this-product"><span class="yes">Yes</span></td><td><span class="yes">Yes</span></td><td><span class="yes">Yes</span></td><td><span class="no">No</span></td></tr>
+          <tr><td>Open source</td><td class="this-product"><span class="yes">Yes · MIT</span></td><td><span class="yes">Yes</span></td><td><span class="no">Core only</span></td><td><span class="no">No</span></td></tr>
+          <tr><td>TikTok + Instagram + YouTube</td><td class="this-product"><span class="yes">Yes</span></td><td><span class="yes">Yes</span></td><td><span class="no">Paid tier only</span></td><td><span class="yes">Yes</span></td></tr>
+          <tr><td>Runs without Elasticsearch or a workflow engine</td><td class="this-product"><span class="yes">Yes</span></td><td><span class="no">No</span></td><td><span class="yes">Yes</span></td><td><span class="no">n/a - hosted</span></td></tr>
+          <tr><td>Review queue before publish</td><td class="this-product"><span class="yes">Yes</span></td><td><span class="yes">Yes</span></td><td><span class="yes">Yes</span></td><td><span class="yes">Yes</span></td></tr>
+          <tr><td>Cost</td><td class="this-product"><span class="yes">Free</span></td><td><span class="yes">Free</span></td><td>Limited free tier</td><td>Paid subscription</td></tr>
+        </tbody>
+      </table></div>
+    </div></section>
+
+    <section class="section section-alt"><div class="wrap text-center">
+      <h2>Hardened, not just hosted</h2>
+      <p class="section-sub">The same checklist you'd want from any service that holds real OAuth
+        tokens - applied here too, not skipped because it's "just" a self-hosted tool.</p>
       <ul class="trust-list">
         <li>${CHECK_SVG}Platform tokens encrypted at rest (AES-256-GCM) - losing the key just means reconnecting accounts, by design</li>
-        <li>${CHECK_SVG}One shared dashboard password - no user accounts to manage for a single-operator tool</li>
+        <li>${CHECK_SVG}CSRF-protected actions, rate-limited login, and a full security-header set (CSP, HSTS, no clickjacking)</li>
+        <li>${CHECK_SVG}One shared dashboard password, timing-safe compared - no user accounts to manage for a single-operator tool</li>
         <li>${CHECK_SVG}<span>TikTok publishes privately until TikTok has reviewed the app</span></li>
         <li>${CHECK_SVG}MIT licensed - read every line yourself, nothing hidden behind a paid tier</li>
       </ul>

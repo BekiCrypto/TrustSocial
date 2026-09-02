@@ -14,6 +14,18 @@ services:
     networks:
       - default
       - proxy
+    # Container hardening: no capability this process ever needs, no privilege
+    # escalation, and a read-only root filesystem - the only things it writes to
+    # are the named volume below and a small tmpfs scratch dir.
+    security_opt:
+      - "no-new-privileges:true"
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 300m
+    cpus: 1.0
     volumes:
       - trustsocial-data:/data
       # Read-only: the importer only ever reads marketing/social/queue/*.md and

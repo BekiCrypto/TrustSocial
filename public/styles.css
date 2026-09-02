@@ -25,6 +25,9 @@
   --cyan:#0891b2;
   --cyan-soft:#e2f6fa;
   --gray-soft:#eceef3;
+  --gold:#b45309;
+  --gold-soft:#fdf1de;
+  --gold-strong:#92400e;
   --radius-sm:8px;
   --radius:14px;
   --radius-lg:22px;
@@ -63,6 +66,9 @@
     --cyan:#22d3ee;
     --cyan-soft:#0a2530;
     --gray-soft:#1e1f2c;
+    --gold:#fbbf24;
+    --gold-soft:#2b2108;
+    --gold-strong:#fcd34d;
     --shadow:0 6px 20px -6px rgba(0,0,0,.5),0 1px 2px rgba(0,0,0,.4);
     --shadow-lg:0 28px 60px -20px rgba(0,0,0,.65);
     color-scheme: dark;
@@ -284,6 +290,84 @@ textarea{min-height:5.5rem;resize:vertical;line-height:1.45}
   font-size:.85rem;color:var(--text-faint)}
 .footer-inner nav{display:flex;gap:1.2rem}
 .footer-inner a{color:var(--text-muted)}
+
+/* ---------------------------------------------------------------- utilities (kept CSP style-src strict - no inline style="" anywhere) */
+.text-center{text-align:center}
+.text-danger{color:var(--danger)}
+.mt-1{margin-top:1rem}
+.ml-sm{margin-left:.4rem}
+.mr-sm{margin-right:.3rem}
+.mb-xs{margin-bottom:.15rem}
+.justify-between{justify-content:space-between}
+.nav-active{color:var(--text)!important}
+
+/* ---------------------------------------------------------------- onboarding checklist (gamified setup progress) */
+.checklist-card{
+  background:linear-gradient(180deg,var(--surface),var(--surface) 60%,var(--primary-soft) 260%);
+  border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.4rem 1.5rem;margin-bottom:1.75rem;
+}
+.checklist-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+.checklist-head h2{font-size:1.05rem;margin:0}
+.checklist-progress-label{font-size:.8rem;color:var(--text-muted);font-weight:600}
+.progress-track{height:8px;border-radius:999px;background:var(--gray-soft);overflow:hidden;margin-bottom:1.1rem}
+.progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--primary),var(--gold));transition:width .3s ease}
+.progress-fill.p0{width:0%}
+.progress-fill.p25{width:25%}
+.progress-fill.p50{width:50%}
+.progress-fill.p75{width:75%}
+.progress-fill.p100{width:100%}
+.checklist-steps{display:grid;gap:.55rem}
+.checklist-step{display:flex;align-items:center;gap:.7rem;font-size:.9rem}
+.checklist-step .step-dot{
+  flex-shrink:0;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--border-strong);color:transparent;
+}
+.checklist-step.done{color:var(--text-muted);text-decoration:line-through;text-decoration-color:var(--border-strong)}
+.checklist-step.done .step-dot{background:var(--success);border-color:var(--success);color:#fff}
+.checklist-step.done .step-dot svg{width:13px;height:13px}
+.checklist-step.next .step-dot{border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-soft)}
+.checklist-step a{font-weight:600}
+
+/* ---------------------------------------------------------------- stats / streak / achievements */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.9rem;margin-bottom:1rem}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;box-shadow:var(--shadow-sm)}
+.stat-card .stat-value{font-size:1.7rem;font-weight:800;line-height:1.1;display:flex;align-items:baseline;gap:.3rem}
+.stat-card .stat-value .unit{font-size:.85rem;font-weight:600;color:var(--text-muted)}
+.stat-card .stat-label{font-size:.78rem;color:var(--text-muted);margin-top:.25rem}
+.stat-card.streak .stat-value{color:var(--gold-strong)}
+
+.badge-row{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1.5rem}
+.badge{
+  display:inline-flex;align-items:center;gap:.35rem;font-size:.78rem;font-weight:700;
+  padding:.35rem .7rem;border-radius:999px;background:var(--gold-soft);color:var(--gold-strong);
+  border:1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+}
+.badge svg{width:14px;height:14px}
+
+.heatmap{display:flex;gap:3px;overflow-x:auto;padding-bottom:.25rem}
+.heatmap-week{display:grid;grid-template-rows:repeat(7,11px);gap:3px}
+.heatmap-day{width:11px;height:11px;border-radius:3px;background:var(--gray-soft)}
+.heatmap-day[data-level="1"]{background:color-mix(in srgb, var(--primary) 30%, var(--gray-soft))}
+.heatmap-day[data-level="2"]{background:color-mix(in srgb, var(--primary) 60%, var(--gray-soft))}
+.heatmap-day[data-level="3"]{background:var(--primary)}
+.heatmap-foot{display:flex;align-items:center;justify-content:space-between;margin-top:.5rem;font-size:.75rem;color:var(--text-faint)}
+
+/* ---------------------------------------------------------------- error / 404 pages */
+.error-wrap{min-height:calc(100vh - 64px);display:flex;align-items:center;justify-content:center;padding:2rem 1.5rem;text-align:center}
+.error-code{font-size:.85rem;font-weight:700;letter-spacing:.08em;color:var(--primary);text-transform:uppercase;margin-bottom:.6rem}
+.error-wrap h1{font-size:1.6rem}
+.error-wrap p{color:var(--text-muted);max-width:420px;margin:0 auto 1.5rem}
+
+/* ---------------------------------------------------------------- comparison table (landing page) */
+.compare-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+table.compare{width:100%;border-collapse:collapse;background:var(--surface);font-size:.88rem;min-width:560px}
+table.compare th,table.compare td{padding:.75rem 1rem;text-align:left;border-bottom:1px solid var(--border)}
+table.compare th{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);background:var(--bg-alt)}
+table.compare td.this-product{font-weight:700;color:var(--primary-strong);background:var(--primary-soft)}
+table.compare th.this-product{color:var(--primary-strong);background:var(--primary-soft)}
+table.compare tr:last-child td{border-bottom:none}
+.yes{color:var(--success);font-weight:700}
+.no{color:var(--text-faint)}
 
 /* ---------------------------------------------------------------- responsive */
 @media (max-width:640px){
