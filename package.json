@@ -1,0 +1,26 @@
+{
+  "name": "postbox",
+  "version": "0.1.0",
+  "private": false,
+  "description": "A tiny, self-hosted post scheduler for a single brand's social accounts (TikTok, Instagram, YouTube today). No search engine, no workflow orchestrator, no multi-tenant machinery - just a queue, a review step, and a publish loop.",
+  "license": "MIT",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "googleapis": "^144.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^24.0.0",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
+  }
+}
