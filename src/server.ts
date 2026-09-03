@@ -41,7 +41,21 @@ app.use(securityHeaders);
 // `public/` sits next to `src/` (dev, via tsx) and next to `dist/` (prod build) alike -
 // one level up from this file's own directory, either way.
 const publicDir = resolve(dirname(fileURLToPath(import.meta.url)), "..", "public");
-app.use(express.static(publicDir, { maxAge: "1h" }));
+app.use(
+  express.static(publicDir, {
+    maxAge: "1h",
+    // `public/auth/tiktok/callback/` holds a platform domain-verification file, which puts a
+    // real directory on disk at the exact path the dynamic GET /auth/:platform/callback route
+    // also matches. serve-static's default behavior 301-redirects a bare directory request to
+    // its own path + "/" before the dashboard router ever sees it - harmless in principle (the
+    // redirect preserves the query string, and Express's non-strict routing still matches the
+    // trailing-slash retry), but it's an unforced extra hop on a security-sensitive OAuth
+    // callback and not worth the fragility. Disabling it only stops that directory-index-style
+    // redirect; serving an exact file path (which is all the verification file needs) is
+    // unaffected either way.
+    redirect: false,
+  })
+);
 
 // Where the TrustLotto repo checkout lives, so the importer can find
 // marketing/social/queue/ and resolve `media:` paths. Override with
