@@ -444,10 +444,18 @@ export function buildDashboard(opts: { trustlottoRepoRoot: string; mediaRoots: s
           action = `<button class="btn btn-secondary btn-sm" disabled>Connect</button>`;
         } else if (account) {
           status = `<p class="account-status ok">Connected as <b>${escapeHtml(account.handle)}</b></p>`;
-          action = `<form method="get" action="/auth/${platform}"><button class="btn btn-secondary btn-sm" type="submit">Reconnect</button></form>`;
+          // A plain link, not a <form method="get">: this navigates same-origin to /auth/:platform,
+          // which immediately 302s to the platform's (cross-origin) consent screen. A GET form's
+          // submission is covered by the page's `form-action 'self'` CSP directive - and per the
+          // CSP3 spec, that directive also governs any redirect the target then issues, not just
+          // the form's own immediate target. Chrome enforces this: the form-based version silently
+          // blocked the whole OAuth flow the instant /auth/:platform tried to redirect to
+          // accounts.google.com/tiktok.com. A plain <a> navigation was never covered by
+          // form-action in the first place, so it isn't affected.
+          action = `<a class="btn btn-secondary btn-sm" href="/auth/${platform}">Reconnect</a>`;
         } else {
           status = `<p class="account-status off">Not connected</p>`;
-          action = `<form method="get" action="/auth/${platform}"><button class="btn btn-primary btn-sm" type="submit">Connect</button></form>`;
+          action = `<a class="btn btn-primary btn-sm" href="/auth/${platform}">Connect</a>`;
         }
         return `<div class="card account-card">
           <div class="card-row justify-between">
