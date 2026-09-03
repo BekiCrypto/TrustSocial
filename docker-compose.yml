@@ -34,7 +34,17 @@ services:
       - ${TRUSTLOTTO_REPO_HOST_PATH:-/opt/trustlotto}:/trustlotto-repo:ro
 
 volumes:
+  # Pinned to a fixed literal name, deliberately NOT left to compose's default
+  # (which prefixes it with the compose *project* name - normally the checkout
+  # directory's basename). A redeploy that extracts a fresh tarball into a
+  # differently-named directory (e.g. `trustsocial-new` during a swap) gets a
+  # different default project name, which silently resolves to a brand-new,
+  # EMPTY volume instead of the real one - this happened for real on
+  # 2026-09-03 and nearly wiped the live database on cutover. Pinning the name
+  # here means every deploy - fresh box or redeploy, whatever the directory is
+  # called - always attaches to the same volume.
   trustsocial-data:
+    name: trustsocial-new_trustsocial-data
 
 networks:
   default:
