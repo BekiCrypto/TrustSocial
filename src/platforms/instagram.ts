@@ -1,5 +1,6 @@
 import type { Account, Post } from "../types.js";
 import type { PlatformAdapter, StoredCredentials } from "./types.js";
+import { publicMediaUrl } from "../media.js";
 
 /**
  * Instagram Graph API (Reels publishing), via the classic Facebook-Login + linked-
@@ -125,19 +126,17 @@ export const instagramAdapter: PlatformAdapter = {
   async publish(post: Post, _account: Account, creds: StoredCredentials) {
     const video = post.media.find((m) => m.kind === "video");
     if (!video) throw new Error("Instagram post has no video attached.");
-    if (!/^https?:\/\//.test(video.path)) {
-      throw new Error(
-        "Instagram fetches media by public URL - this post's media is a local path. " +
-          "Serve it first (TrustSocial's /media/:id route) or host it and use that URL."
-      );
-    }
+    // Instagram fetches by URL from Meta's own servers, not the browser - a local filesystem
+    // path (the common case: the importer stores repo-relative paths) needs converting to
+    // this server's own /media/:file address first.
+    const videoUrl = publicMediaUrl(video.path);
     const igUserId = creds.extra?.igUserId;
     if (!igUserId) throw new Error("Missing igUserId on stored Instagram credentials - reconnect the account.");
 
     // 1) create a REELS media container
     const container = await graphPost(`/${igUserId}/media`, {
       media_type: "REELS",
-      video_url: video.path,
+      video_url: videoUrl,
       caption: post.caption,
       access_token: creds.accessToken,
     });

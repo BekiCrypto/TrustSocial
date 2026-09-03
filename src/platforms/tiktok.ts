@@ -1,5 +1,6 @@
 import type { Account, Post } from "../types.js";
 import type { PlatformAdapter, StoredCredentials } from "./types.js";
+import { publicMediaUrl } from "../media.js";
 
 /**
  * TikTok Content Posting API v2 (Direct Post, PULL_FROM_URL variant).
@@ -131,12 +132,11 @@ export const tiktokAdapter: PlatformAdapter = {
   async publish(post_: Post, _account: Account, creds: StoredCredentials) {
     const video = post_.media.find((m) => m.kind === "video");
     if (!video) throw new Error("TikTok post has no video attached.");
-    if (!/^https?:\/\//.test(video.path)) {
-      throw new Error(
-        "TikTok fetches media by public URL from a domain verified in the app's settings - this " +
-          "post's media is a local path. Serve it first (TrustSocial's /media/:id route) or host it."
-      );
-    }
+    // TikTok fetches by URL from its own servers, not the browser - a local filesystem path
+    // (the common case: the importer stores repo-relative paths) needs converting to this
+    // server's own /media/:file address first. That address is only reachable at all because
+    // its domain was verified in TikTok's app settings (see README's TikTok setup section).
+    const videoUrl = publicMediaUrl(video.path);
 
     const privacyLevel = isAudited() ? "PUBLIC_TO_EVERYONE" : "SELF_ONLY";
     const init = await post(
@@ -149,7 +149,7 @@ export const tiktokAdapter: PlatformAdapter = {
           disable_comment: false,
           disable_stitch: false,
         },
-        source_info: { source: "PULL_FROM_URL", video_url: video.path },
+        source_info: { source: "PULL_FROM_URL", video_url: videoUrl },
       },
       creds.accessToken
     );
