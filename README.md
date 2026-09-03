@@ -74,8 +74,9 @@ the OAuth tokens each platform hands back after you approve the connection in yo
 ### YouTube
 1. [console.cloud.google.com](https://console.cloud.google.com) → new project → enable **YouTube Data API v3**.
 2. OAuth consent screen: type **External**, fill the basics, leave publish status as **Testing** (fine for your own channel — full verification is only required to open it to arbitrary users).
-3. Credentials → **Create OAuth client ID** → type **Web application** → add `{PUBLIC_URL}/auth/youtube/callback` as an authorized redirect URI.
-4. Put the client ID/secret in `.env` as `YOUTUBE_CLIENT_ID` / `YOUTUBE_CLIENT_SECRET`.
+3. **Add yourself as a test user** — same screen (or its "Audience" tab), **Test users** section → **+ ADD USERS** → the exact Google account email you'll connect with. Skip this and Google shows `Error 403: access_denied` ("app is currently being tested") the moment you try to log in, even though everything else is configured correctly - a Testing-mode app only ever accepts accounts on this explicit list, full stop.
+4. Credentials → **Create OAuth client ID** → type **Web application** → add `{PUBLIC_URL}/auth/youtube/callback` as an authorized redirect URI.
+5. Put the client ID/secret in `.env` as `YOUTUBE_CLIENT_ID` / `YOUTUBE_CLIENT_SECRET`.
 
 ### Instagram
 1. [developers.facebook.com](https://developers.facebook.com) → Create App → type **Business**.
