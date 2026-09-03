@@ -351,7 +351,11 @@ export function buildDashboard(opts: { trustlottoRepoRoot: string; mediaRoots: s
     const sections = STATUS_ORDER.map((s) => {
       const items = byStatus.get(s) ?? [];
       if (!items.length) return "";
-      return `<div class="section-heading">${STATUS_LABEL[s]} · ${items.length}</div>${items.map((p) => postCard(p, csrf)).join("\n")}`;
+      const approveAll =
+        s === "pending_review"
+          ? `<form method="post" action="/app/posts/approve-all">${csrfField(csrf)}<button class="btn btn-primary btn-sm" type="submit">Approve all ${items.length}</button></form>`
+          : "";
+      return `<div class="section-heading">${STATUS_LABEL[s]} · ${items.length}${approveAll}</div>${items.map((p) => postCard(p, csrf)).join("\n")}`;
     }).join("\n");
 
     const empty = `<div class="empty-state">
@@ -412,6 +416,10 @@ export function buildDashboard(opts: { trustlottoRepoRoot: string; mediaRoots: s
     );
   });
 
+  router.post("/app/posts/approve-all", (_req, res) => {
+    for (const p of listPosts({ status: "pending_review" })) setPostStatus(p.id, "scheduled");
+    res.redirect("/app");
+  });
   router.post("/app/posts/:id/approve", (req, res) => {
     setPostStatus(req.params.id, "scheduled");
     res.redirect("/app");
