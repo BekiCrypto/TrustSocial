@@ -95,11 +95,18 @@ the OAuth tokens each platform hands back after you approve the connection in yo
    - **Content Posting API** - this is what actually publishes the video, separate concern.
 3. Add `{PUBLIC_URL}/auth/tiktok/callback` as a redirect URI **inside Login Kit's own product
    settings specifically** - not just somewhere else in the app config.
-4. **Verify your domain** in the app's settings (a DNS TXT record or file-upload check) — TikTok will only fetch video URLs from a domain you've proven you own.
-5. Put the client key/secret in `.env` as `TIKTOK_CLIENT_KEY` / `TIKTOK_CLIENT_SECRET`. Double
+4. **Add yourself as a Sandbox target user** - toggle the app to **Sandbox** mode, open **Sandbox
+   settings** → **Target users** → **Add account** → log in with the exact TikTok account you'll
+   connect, agree to the Developer Terms when asked. Skip this and the authorize screen fails with
+   `error=unauthorized_client&error_type=client_key` even though Login Kit itself is configured
+   correctly - an unreviewed app only accepts accounts explicitly added here, same idea as Google's
+   OAuth consent screen test users. TikTok says this can take **up to an hour** to actually take
+   effect after saving.
+5. **Verify your domain** in the app's settings (a DNS TXT record or file-upload check) — TikTok will only fetch video URLs from a domain you've proven you own.
+6. Put the client key/secret in `.env` as `TIKTOK_CLIENT_KEY` / `TIKTOK_CLIENT_SECRET`. Double
    check you copied the **Client Key** field specifically, not an "App ID" or other identifier
    shown nearby on the same page - they look similar but aren't interchangeable.
-6. **Leave `TIKTOK_AUDITED=false`.** Every post publishes as private (`SELF_ONLY`) until TikTok has reviewed and approved the app for public posting — that review is TikTok's process, on TikTok's timeline, and nothing in this codebase can shortcut it. Submit for review when you're ready (inside the TikTok developer dashboard); once approved, flip `TIKTOK_AUDITED=true`.
+7. **Leave `TIKTOK_AUDITED=false`.** Every post publishes as private (`SELF_ONLY`) until TikTok has reviewed and approved the app for public posting — that review is TikTok's process, on TikTok's timeline, and nothing in this codebase can shortcut it. Submit for review when you're ready (inside the TikTok developer dashboard); once approved, flip `TIKTOK_AUDITED=true`.
 
 ## Running it
 
